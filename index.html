@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     
-    <!-- Firebase SDK (실시간 DB용) -->
+    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
 
@@ -19,7 +19,6 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
 
-    <!-- Header -->
     <header class="bg-slate-800/80 backdrop-blur-md border-b border-slate-700/50 sticky top-0 z-50">
         <div class="max-w-xl mx-auto px-4 py-3.5 flex items-center justify-between">
             <div class="flex items-center space-x-2.5">
@@ -37,10 +36,7 @@
         </div>
     </header>
 
-    <!-- Main Container -->
     <main class="max-w-xl w-full mx-auto px-4 py-6 flex-grow">
-
-        <!-- Info Banner -->
         <div class="bg-gradient-to-r from-indigo-900/60 to-slate-800/80 border border-indigo-500/30 rounded-2xl p-4 mb-6 shadow-xl relative overflow-hidden">
             <div class="absolute -right-4 -bottom-4 text-indigo-500/10 text-8xl font-black pointer-events-none">
                 <i class="fa-solid fa-calendar-days"></i>
@@ -60,7 +56,6 @@
             </div>
         </div>
 
-        <!-- Navigation Tabs -->
         <div class="flex bg-slate-800/90 p-1 rounded-xl mb-6 border border-slate-700/50">
             <button onclick="switchTab('vote')" id="tab-vote" class="flex-1 py-2.5 rounded-lg text-sm font-semibold transition flex items-center justify-center space-x-2 bg-indigo-600 text-white shadow-md">
                 <i class="fa-solid fa-pen-to-square"></i>
@@ -72,73 +67,57 @@
             </button>
         </div>
 
-        <!-- Tab 1: Vote Form -->
         <div id="section-vote" class="space-y-6">
             <form id="voteForm" onsubmit="handleVoteSubmit(event)" class="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 sm:p-6 backdrop-blur-sm space-y-5 shadow-xl">
-                
                 <div id="editNotice" class="hidden bg-amber-500/10 border border-amber-500/30 text-amber-300 px-4 py-3 rounded-xl text-xs sm:text-sm flex items-center space-x-2">
                     <i class="fa-solid fa-triangle-exclamation text-base shrink-0"></i>
                     <span>이 기기로 이미 제출한 내역이 있습니다. 내용을 수정하여 다시 제출할 수 있습니다.</span>
                 </div>
 
-                <!-- Personal Info -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">성명</label>
-                    <input type="text" id="userName" required
-                        class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
+                    <input type="text" id="userName" required class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
                 </div>
 
                 <hr class="border-slate-700/50">
 
-                <!-- Menu Recommendations -->
                 <div class="space-y-4">
                     <div>
                         <label class="block text-xs font-semibold text-indigo-400 uppercase tracking-wider mb-1">
                             음식점 0 <span class="text-rose-400">*</span>
                         </label>
-                        <input type="text" id="food0" required
-                            class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
+                        <input type="text" id="food0" required class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
                     </div>
-
                     <div>
                         <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
                             음식점 1 <span class="text-slate-500 text-xs">(선택)</span>
                         </label>
-                        <input type="text" id="food1"
-                            class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
+                        <input type="text" id="food1" class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
                     </div>
-
                     <div>
                         <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
                             디저트 가게 <span class="text-slate-500 text-xs">(선택)</span>
                         </label>
-                        <input type="text" id="dessert"
-                            class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
+                        <input type="text" id="dessert" class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
                     </div>
                 </div>
 
-                <button type="submit" id="submitBtn"
-                    class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3.5 rounded-xl shadow-lg shadow-indigo-600/30 transition flex items-center justify-center space-x-2 text-sm mt-2">
+                <button type="submit" id="submitBtn" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3.5 rounded-xl shadow-lg shadow-indigo-600/30 transition flex items-center justify-center space-x-2 text-sm mt-2">
                     <i class="fa-solid fa-check"></i>
                     <span id="submitBtnText">투표 내용 제출하기</span>
                 </button>
             </form>
         </div>
 
-        <!-- Tab 2: Status View -->
         <div id="section-status" class="hidden space-y-6">
-            <!-- Top 3 Ranking -->
             <div class="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 backdrop-blur-sm shadow-xl">
                 <h3 class="font-bold text-white text-sm mb-4 flex items-center space-x-2">
                     <i class="fa-solid fa-fire text-amber-400"></i>
                     <span>실시간 인기 추천 TOP 3 (음식점 0 기준)</span>
                 </h3>
-                <div id="topRankingList" class="space-y-3">
-                    <!-- Dynamically injected -->
-                </div>
+                <div id="topRankingList" class="space-y-3"></div>
             </div>
 
-            <!-- All Votes List -->
             <div class="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 backdrop-blur-sm shadow-xl">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="font-bold text-white text-sm flex items-center space-x-2">
@@ -146,20 +125,15 @@
                         <span>전체 제출 내역 (<span id="totalCount">0</span>명)</span>
                     </h3>
                 </div>
-                <div id="allVotesList" class="space-y-3 max-h-[450px] overflow-y-auto pr-1">
-                    <!-- Dynamically injected -->
-                </div>
+                <div id="allVotesList" class="space-y-3 max-h-[450px] overflow-y-auto pr-1"></div>
             </div>
         </div>
-
     </main>
 
-    <!-- Footer -->
     <footer class="text-center py-6 text-xs text-slate-500 border-t border-slate-800 mt-10">
         과학화통제소 회식 메뉴 투표 시스템 &copy; 2026
     </footer>
 
-    <!-- Admin Modal -->
     <div id="adminModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl">
             <div class="flex items-center justify-between">
@@ -169,11 +143,8 @@
             
             <div id="adminLoginArea" class="space-y-3">
                 <p class="text-xs text-slate-400">관리자 비밀번호를 입력하세요.</p>
-                <input type="password" id="adminPw" placeholder="비밀번호 입력"
-                    class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
-                <button onclick="checkAdminPassword()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 rounded-xl text-sm transition">
-                    로그인
-                </button>
+                <input type="password" id="adminPw" placeholder="비밀번호 입력" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
+                <button onclick="checkAdminPassword()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 rounded-xl text-sm transition">로그인</button>
             </div>
 
             <div id="adminControlArea" class="hidden space-y-3">
@@ -186,16 +157,12 @@
                     <i class="fa-solid fa-file-excel text-emerald-400"></i>
                     <span>엑셀(CSV) 다운로드</span>
                 </button>
-                <button onclick="resetAllData()" class="w-full bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 font-medium py-2.5 rounded-xl text-xs transition border border-rose-500/30">
-                    전체 데이터 초기화
-                </button>
+                <button onclick="resetAllData()" class="w-full bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 font-medium py-2.5 rounded-xl text-xs transition border border-rose-500/30">전체 데이터 초기화</button>
             </div>
         </div>
     </div>
 
-    <!-- Script Logic -->
     <script>
-        // 본인의 진짜 Firebase 설정값
         const firebaseConfig = {
             apiKey: "AIzaSyCudJINOYA-75Irawd26GvgwNCqPz-I6uQ",
             authDomain: "guatonguesaw.firebaseapp.com",
@@ -268,10 +235,8 @@
                     checkExistingVote();
                     renderStatus();
                 }, (error) => {
-                    console.error("DB Sync Error (Rules Check Required):", error);
+                    console.error("DB Sync Error:", error);
                 });
-            } else {
-                console.warn("DB is not initialized. Running in local-only fallback mode.");
             }
         }
 
@@ -337,19 +302,12 @@
                     await db.collection("votes").doc(deviceFingerprint).set(voteData);
                 } catch (err) {
                     console.error("Cloud DB Save Error:", err);
-                    alert("서버 저장 중 오류가 발생했습니다. Firebase Firestore 규칙(Rules) 설정을 확인해주세요.");
+                    alert("서버 저장 중 오류가 발생했습니다.");
                     return;
                 }
-            } else {
-                alert("데이터베이스 연결을 확인할 수 없습니다. 로컬에만 저장됩니다.");
             }
 
-            confetti({
-                particleCount: 80,
-                spread: 70,
-                origin: { y: 0.6 }
-            });
-
+            confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
             alert(isUpdate ? '투표 내용이 성공적으로 수정되었습니다!' : '투표가 완료되었습니다!');
             switchTab('status');
             checkExistingVote();
@@ -357,7 +315,6 @@
 
         function renderStatus() {
             const voteArray = Object.entries(globalVotes).map(([fp, data]) => ({ fp, ...data }));
-            
             document.getElementById('totalCount').innerText = voteArray.length;
 
             const foodCounts = {};
@@ -421,62 +378,42 @@
             document.getElementById('adminControlArea').classList.add('hidden');
         }
 
-        function closeAdminModal() {
-            document.getElementById('adminModal').classList.add('hidden');
-        }
+        function closeAdminModal() { document.getElementById('adminModal').classList.add('hidden'); }
 
         function checkAdminPassword() {
-            const pw = document.getElementById('adminPw').value;
-            if (pw === '1029') {
+            if (document.getElementById('adminPw').value === '1029') {
                 document.getElementById('adminLoginArea').classList.add('hidden');
                 document.getElementById('adminControlArea').classList.remove('hidden');
-            } else {
-                alert('비밀번호가 틀렸습니다.');
-            }
+            } else { alert('비밀번호가 틀렸습니다.'); }
         }
 
         function copyKakaoSummary() {
             const voteArray = Object.values(globalVotes);
-            if (voteArray.length === 0) {
-                alert('복사할 데이터가 없습니다.');
-                return;
-            }
-
+            if (voteArray.length === 0) { alert('복사할 데이터가 없습니다.'); return; }
             let text = `[과학화통제소 10월 회식 메뉴 투표 결과]\n총 참여 인원: ${voteArray.length}명\n\n`;
             voteArray.forEach((v, i) => {
                 text += `${i + 1}. ${v.name}\n- 음식점0: ${v.food0}\n`;
                 if (v.food1) text += `- 음식점1: ${v.food1}\n`;
-                if (v.dessert) text += `- 디저트: ${v.dessert}\n`;
-                text += `\n`;
+                if (v.dessert) text += `- 디저트: ${v.dessert}\n\n`;
             });
-
-            navigator.clipboard.writeText(text).then(() => {
-                alert('카카오톡 공유용 요약 텍스트가 클립보드에 복사되었습니다!');
-            });
+            navigator.clipboard.writeText(text).then(() => { alert('카카오톡 요약 텍스트가 복사되었습니다!'); });
         }
 
         function exportCSV() {
             const voteArray = Object.values(globalVotes);
-            if (voteArray.length === 0) {
-                alert('다운로드할 데이터가 없습니다.');
-                return;
-            }
-
+            if (voteArray.length === 0) { alert('다운로드할 데이터가 없습니다.'); return; }
             let csv = '\uFEFF성명,음식점0,음식점1,디저트가게,제출시간\n';
             voteArray.forEach(v => {
                 csv += `"${v.name}","${v.food0}","${v.food1 || ''}","${v.dessert || ''}","${v.updatedAt || ''}"\n`;
             });
-
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = url;
-            a.download = '과학화통제소_10월회식투표.csv';
-            a.click();
+            a.href = url; a.download = '과학화통제소_10월회식투표.csv'; a.click();
         }
 
         async function resetAllData() {
-            if (confirm('모든 투표 데이터를 초기화하시겠습니까? 복구할 수 없습니다.')) {
+            if (confirm('모든 데이터를 초기화하시겠습니까?')) {
                 localStorage.removeItem('gwatongso_votes');
                 if (db) {
                     try {
@@ -484,8 +421,7 @@
                         snapshot.forEach(doc => doc.ref.delete());
                     } catch(e) {}
                 }
-                alert('초기화되었습니다.');
-                location.reload();
+                alert('초기화되었습니다.'); location.reload();
             }
         }
 
