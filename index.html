@@ -19,6 +19,7 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
 
+    <!-- Header -->
     <header class="bg-slate-800/80 backdrop-blur-md border-b border-slate-700/50 sticky top-0 z-50">
         <div class="max-w-xl mx-auto px-4 py-3.5 flex items-center justify-between">
             <div class="flex items-center space-x-2.5">
@@ -36,7 +37,10 @@
         </div>
     </header>
 
+    <!-- Main Container -->
     <main class="max-w-xl w-full mx-auto px-4 py-6 flex-grow">
+
+        <!-- Info Banner -->
         <div class="bg-gradient-to-r from-indigo-900/60 to-slate-800/80 border border-indigo-500/30 rounded-2xl p-4 mb-6 shadow-xl relative overflow-hidden">
             <div class="absolute -right-4 -bottom-4 text-indigo-500/10 text-8xl font-black pointer-events-none">
                 <i class="fa-solid fa-calendar-days"></i>
@@ -56,6 +60,7 @@
             </div>
         </div>
 
+        <!-- Navigation Tabs -->
         <div class="flex bg-slate-800/90 p-1 rounded-xl mb-6 border border-slate-700/50">
             <button onclick="switchTab('vote')" id="tab-vote" class="flex-1 py-2.5 rounded-lg text-sm font-semibold transition flex items-center justify-center space-x-2 bg-indigo-600 text-white shadow-md">
                 <i class="fa-solid fa-pen-to-square"></i>
@@ -67,13 +72,16 @@
             </button>
         </div>
 
+        <!-- Tab 1: Vote Form -->
         <div id="section-vote" class="space-y-6">
             <form id="voteForm" onsubmit="handleVoteSubmit(event)" class="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 sm:p-6 backdrop-blur-sm space-y-5 shadow-xl">
+                
                 <div id="editNotice" class="hidden bg-amber-500/10 border border-amber-500/30 text-amber-300 px-4 py-3 rounded-xl text-xs sm:text-sm flex items-center space-x-2">
                     <i class="fa-solid fa-triangle-exclamation text-base shrink-0"></i>
                     <span>이 기기로 이미 제출한 내역이 있습니다. 내용을 수정하여 다시 제출할 수 있습니다.</span>
                 </div>
 
+                <!-- Personal Info -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">성명</label>
                     <input type="text" id="userName" required class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
@@ -81,6 +89,7 @@
 
                 <hr class="border-slate-700/50">
 
+                <!-- Menu Recommendations -->
                 <div class="space-y-4">
                     <div>
                         <label class="block text-xs font-semibold text-indigo-400 uppercase tracking-wider mb-1">
@@ -88,12 +97,14 @@
                         </label>
                         <input type="text" id="food0" required class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
                     </div>
+
                     <div>
                         <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
                             음식점 1 <span class="text-slate-500 text-xs">(선택)</span>
                         </label>
                         <input type="text" id="food1" class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
                     </div>
+
                     <div>
                         <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
                             디저트 가게 <span class="text-slate-500 text-xs">(선택)</span>
@@ -109,31 +120,73 @@
             </form>
         </div>
 
+        <!-- Tab 2: Status View -->
         <div id="section-status" class="hidden space-y-6">
+            
+            <!-- Participation Count Badge -->
+            <div class="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-4 flex items-center justify-between shadow-xl">
+                <span class="text-xs text-slate-400 font-medium">현재 총 투표 참여 인원</span>
+                <span class="text-sm font-bold bg-indigo-500/20 text-indigo-300 px-3 py-1 rounded-full border border-indigo-500/30">
+                    <span id="totalCount">0</span>명 참여 중
+                </span>
+            </div>
+
+            <!-- Top 3 Integrated Restaurants (Food 0 + Food 1) -->
             <div class="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 backdrop-blur-sm shadow-xl">
                 <h3 class="font-bold text-white text-sm mb-4 flex items-center space-x-2">
                     <i class="fa-solid fa-fire text-amber-400"></i>
-                    <span>실시간 인기 추천 TOP 3 (음식점 0 기준)</span>
+                    <span>통합 음식점 추천 TOP 3 (음식점 0+1 합산)</span>
                 </h3>
-                <div id="topRankingList" class="space-y-3"></div>
+                <div id="topRestaurantRankingList" class="space-y-3">
+                    <!-- Dynamically injected -->
+                </div>
             </div>
 
+            <!-- Top 3 Desserts -->
             <div class="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 backdrop-blur-sm shadow-xl">
+                <h3 class="font-bold text-white text-sm mb-4 flex items-center space-x-2">
+                    <i class="fa-solid fa-ice-cream text-pink-400"></i>
+                    <span>디저트 가게 추천 TOP 3</span>
+                </h3>
+                <div id="topDessertRankingList" class="space-y-3">
+                    <!-- Dynamically injected -->
+                </div>
+            </div>
+
+            <!-- My Vote Section (Visible to User) -->
+            <div id="myVoteContainer" class="bg-slate-800/60 border border-indigo-500/30 rounded-2xl p-5 backdrop-blur-sm shadow-xl hidden">
+                <h3 class="font-bold text-white text-sm mb-3 flex items-center space-x-2">
+                    <i class="fa-solid fa-user-check text-indigo-400"></i>
+                    <span>내가 제출한 투표 내역</span>
+                </h3>
+                <div id="myVoteDetail" class="bg-slate-900/80 p-3.5 rounded-xl border border-indigo-500/40 space-y-2">
+                    <!-- Dynamically injected -->
+                </div>
+            </div>
+
+            <!-- Admin Only: All Votes List -->
+            <div id="adminVotesSection" class="bg-slate-800/60 border border-amber-500/40 rounded-2xl p-5 backdrop-blur-sm shadow-xl hidden">
                 <div class="flex items-center justify-between mb-4">
-                    <h3 class="font-bold text-white text-sm flex items-center space-x-2">
-                        <i class="fa-solid fa-list-check text-indigo-400"></i>
-                        <span>전체 제출 내역 (<span id="totalCount">0</span>명)</span>
+                    <h3 class="font-bold text-amber-300 text-sm flex items-center space-x-2">
+                        <i class="fa-solid fa-lock-open text-amber-400"></i>
+                        <span>전체 제출 내역 (관리자 모드 전용)</span>
                     </h3>
                 </div>
-                <div id="allVotesList" class="space-y-3 max-h-[450px] overflow-y-auto pr-1"></div>
+                <div id="allVotesList" class="space-y-3 max-h-[450px] overflow-y-auto pr-1">
+                    <!-- Dynamically injected -->
+                </div>
             </div>
+
         </div>
+
     </main>
 
+    <!-- Footer -->
     <footer class="text-center py-6 text-xs text-slate-500 border-t border-slate-800 mt-10">
         과학화통제소 회식 메뉴 투표 시스템 &copy; 2026
     </footer>
 
+    <!-- Admin Modal -->
     <div id="adminModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl">
             <div class="flex items-center justify-between">
@@ -185,6 +238,7 @@
 
         let deviceFingerprint = '';
         let globalVotes = {};
+        let isAdminLoggedIn = false;
 
         async function initFingerprint() {
             try {
@@ -211,21 +265,22 @@
                 deviceFingerprint = 'device-' + Math.random().toString(36).substring(2);
             }
 
-            // 기존 로컬 캐시 삭제 후 DB 실시간 연결
             localStorage.removeItem('gwatongso_votes');
             listenToDatabase();
         }
 
-        // 파이어베이스 100% 동기화 (로컬 병합 제거)
         function listenToDatabase() {
             if (db) {
                 db.collection("votes").onSnapshot((snapshot) => {
                     const fetchedVotes = {};
                     snapshot.forEach((doc) => {
-                        fetchedVotes[doc.id] = doc.data();
+                        const data = doc.data();
+                        if (data && data.name && data.food0) {
+                            fetchedVotes[doc.id] = data;
+                        }
                     });
                     
-                    globalVotes = fetchedVotes; // DB 원본으로만 갱신
+                    globalVotes = fetchedVotes;
                     checkExistingVote();
                     renderStatus();
                 }, (error) => {
@@ -247,6 +302,10 @@
             } else {
                 document.getElementById('editNotice').classList.add('hidden');
                 document.getElementById('submitBtnText').innerText = '투표 내용 제출하기';
+                document.getElementById('userName').value = '';
+                document.getElementById('food0').value = '';
+                document.getElementById('food1').value = '';
+                document.getElementById('dessert').value = '';
             }
         }
 
@@ -307,27 +366,29 @@
         }
 
         function renderStatus() {
-            const voteArray = Object.entries(globalVotes)
-                .map(([fp, data]) => ({ fp, ...data }))
-                .filter(v => v.name && v.food0); // 잘못된 빈 데이터 필터링
-
+            const voteArray = Object.entries(globalVotes).map(([fp, data]) => ({ fp, ...data }));
             document.getElementById('totalCount').innerText = voteArray.length;
 
-            const foodCounts = {};
+            // 1. 음식점 0 + 음식점 1 통합 랭킹 계산
+            const restaurantCounts = {};
             voteArray.forEach(v => {
                 if (v.food0) {
-                    const cleanName = v.food0.trim();
-                    foodCounts[cleanName] = (foodCounts[cleanName] || 0) + 1;
+                    const name0 = v.food0.trim();
+                    if (name0) restaurantCounts[name0] = (restaurantCounts[name0] || 0) + 1;
+                }
+                if (v.food1) {
+                    const name1 = v.food1.trim();
+                    if (name1) restaurantCounts[name1] = (restaurantCounts[name1] || 0) + 1;
                 }
             });
 
-            const sortedFood = Object.entries(foodCounts).sort((a, b) => b[1] - a[1]);
-            const rankingListEl = document.getElementById('topRankingList');
+            const sortedRestaurants = Object.entries(restaurantCounts).sort((a, b) => b[1] - a[1]);
+            const restRankingEl = document.getElementById('topRestaurantRankingList');
             
-            if (sortedFood.length === 0) {
-                rankingListEl.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">아직 제출된 투표가 없습니다.</p>`;
+            if (sortedRestaurants.length === 0) {
+                restRankingEl.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">추천된 음식점이 없습니다.</p>`;
             } else {
-                rankingListEl.innerHTML = sortedFood.slice(0, 3).map(([food, count], idx) => {
+                restRankingEl.innerHTML = sortedRestaurants.slice(0, 3).map(([food, count], idx) => {
                     const medals = ['text-amber-400', 'text-slate-300', 'text-amber-600'];
                     return `
                         <div class="flex items-center justify-between bg-slate-900/60 p-3 rounded-xl border border-slate-700/40">
@@ -341,45 +402,111 @@
                 }).join('');
             }
 
-            const allListEl = document.getElementById('allVotesList');
-            if (voteArray.length === 0) {
-                allListEl.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">등록된 데이터가 없습니다.</p>`;
+            // 2. 디저트 가게 랭킹 계산
+            const dessertCounts = {};
+            voteArray.forEach(v => {
+                if (v.dessert) {
+                    const dessertName = v.dessert.trim();
+                    if (dessertName) dessertCounts[dessertName] = (dessertCounts[dessertName] || 0) + 1;
+                }
+            });
+
+            const sortedDesserts = Object.entries(dessertCounts).sort((a, b) => b[1] - a[1]);
+            const dessertRankingEl = document.getElementById('topDessertRankingList');
+
+            if (sortedDesserts.length === 0) {
+                dessertRankingEl.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">추천된 디저트 가게가 없습니다.</p>`;
             } else {
-                allListEl.innerHTML = voteArray.map(v => {
-                    const isMyVote = (v.fp === deviceFingerprint);
+                dessertRankingEl.innerHTML = sortedDesserts.slice(0, 3).map(([dessert, count], idx) => {
+                    const medals = ['text-pink-400', 'text-slate-300', 'text-amber-600'];
                     return `
-                        <div class="bg-slate-900/60 p-3.5 rounded-xl border ${isMyVote ? 'border-indigo-500/50 bg-indigo-950/20' : 'border-slate-700/40'} space-y-2">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center space-x-2">
-                                    <span class="font-bold text-sm text-white">${v.name}</span>
-                                    ${isMyVote ? '<span class="text-[10px] bg-indigo-600 text-white font-bold px-2 py-0.5 rounded-full">내 투표</span>' : ''}
-                                </div>
-                                <span class="text-[10px] text-slate-500">${v.updatedAt || ''}</span>
+                        <div class="flex items-center justify-between bg-slate-900/60 p-3 rounded-xl border border-slate-700/40">
+                            <div class="flex items-center space-x-3">
+                                <span class="font-black text-sm w-6 text-center ${medals[idx] || 'text-slate-400'}">${idx + 1}</span>
+                                <span class="text-sm font-semibold text-white">${dessert}</span>
                             </div>
-                            <div class="text-xs text-slate-300 space-y-1 bg-slate-800/40 p-2 rounded-lg">
-                                <div><strong class="text-indigo-400">음식점 0:</strong> ${v.food0}</div>
-                                ${v.food1 ? `<div><strong class="text-slate-400">음식점 1:</strong> ${v.food1}</div>` : ''}
-                                ${v.dessert ? `<div><strong class="text-slate-400">디저트:</strong> ${v.dessert}</div>` : ''}
-                            </div>
+                            <span class="text-xs bg-pink-500/20 text-pink-300 font-bold px-2.5 py-1 rounded-lg">${count}표</span>
                         </div>
                     `;
                 }).join('');
+            }
+
+            // 3. 일반 유저용: 내 투표 내역 표시
+            const myVoteContainer = document.getElementById('myVoteContainer');
+            const myVoteDetail = document.getElementById('myVoteDetail');
+            const myVoteData = globalVotes[deviceFingerprint];
+
+            if (myVoteData) {
+                myVoteContainer.classList.remove('hidden');
+                myVoteDetail.innerHTML = `
+                    <div class="flex items-center justify-between border-b border-slate-800 pb-2 mb-2">
+                        <span class="font-bold text-sm text-indigo-200">${myVoteData.name}</span>
+                        <span class="text-[10px] text-slate-400">${myVoteData.updatedAt || ''}</span>
+                    </div>
+                    <div class="text-xs text-slate-300 space-y-1">
+                        <div><strong class="text-indigo-400">음식점 0:</strong> ${myVoteData.food0}</div>
+                        ${myVoteData.food1 ? `<div><strong class="text-slate-400">음식점 1:</strong> ${myVoteData.food1}</div>` : ''}
+                        ${myVoteData.dessert ? `<div><strong class="text-slate-400">디저트:</strong> ${myVoteData.dessert}</div>` : ''}
+                    </div>
+                `;
+            } else {
+                myVoteContainer.classList.add('hidden');
+            }
+
+            // 4. 관리자 전용: 전체 제출 목록 표시
+            const adminVotesSection = document.getElementById('adminVotesSection');
+            const allListEl = document.getElementById('allVotesList');
+
+            if (isAdminLoggedIn) {
+                adminVotesSection.classList.remove('hidden');
+                if (voteArray.length === 0) {
+                    allListEl.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">등록된 데이터가 없습니다.</p>`;
+                } else {
+                    allListEl.innerHTML = voteArray.map(v => {
+                        const isMyVote = (v.fp === deviceFingerprint);
+                        return `
+                            <div class="bg-slate-900/60 p-3.5 rounded-xl border ${isMyVote ? 'border-indigo-500/50 bg-indigo-950/20' : 'border-slate-700/40'} space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="font-bold text-sm text-white">${v.name}</span>
+                                        ${isMyVote ? '<span class="text-[10px] bg-indigo-600 text-white font-bold px-2 py-0.5 rounded-full">내 투표</span>' : ''}
+                                    </div>
+                                    <span class="text-[10px] text-slate-500">${v.updatedAt || ''}</span>
+                                </div>
+                                <div class="text-xs text-slate-300 space-y-1 bg-slate-800/40 p-2 rounded-lg">
+                                    <div><strong class="text-indigo-400">음식점 0:</strong> ${v.food0}</div>
+                                    ${v.food1 ? `<div><strong class="text-slate-400">음식점 1:</strong> ${v.food1}</div>` : ''}
+                                    ${v.dessert ? `<div><strong class="text-slate-400">디저트:</strong> ${v.dessert}</div>` : ''}
+                                </div>
+                            </div>
+                        `;
+                    }).join('');
+                }
+            } else {
+                adminVotesSection.classList.add('hidden');
             }
         }
 
         function openAdminModal() {
             document.getElementById('adminModal').classList.remove('hidden');
             document.getElementById('adminPw').value = '';
-            document.getElementById('adminLoginArea').classList.remove('hidden');
-            document.getElementById('adminControlArea').classList.add('hidden');
+            if (isAdminLoggedIn) {
+                document.getElementById('adminLoginArea').classList.add('hidden');
+                document.getElementById('adminControlArea').classList.remove('hidden');
+            } else {
+                document.getElementById('adminLoginArea').classList.remove('hidden');
+                document.getElementById('adminControlArea').classList.add('hidden');
+            }
         }
 
         function closeAdminModal() { document.getElementById('adminModal').classList.add('hidden'); }
 
         function checkAdminPassword() {
             if (document.getElementById('adminPw').value === '1029') {
+                isAdminLoggedIn = true;
                 document.getElementById('adminLoginArea').classList.add('hidden');
                 document.getElementById('adminControlArea').classList.remove('hidden');
+                renderStatus();
             } else { alert('비밀번호가 틀렸습니다.'); }
         }
 
