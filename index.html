@@ -195,7 +195,7 @@
 
     <!-- Script Logic -->
     <script>
-        // 1. Firebase 실제 설정 (guatonguesaw 프로젝트 연동)
+        // 본인의 진짜 Firebase 설정값
         const firebaseConfig = {
             apiKey: "AIzaSyCudJINOYA-75Irawd26GvgwNCqPz-I6uQ",
             authDomain: "guatonguesaw.firebaseapp.com",
@@ -206,19 +206,19 @@
             measurementId: "G-HL69DM1C2H"
         };
 
-        // Firebase 초기화
-        let db;
+        let db = null;
         try {
-            firebase.initializeApp(firebaseConfig);
-            db = firebase.firestore();
+            if (typeof firebase !== 'undefined') {
+                firebase.initializeApp(firebaseConfig);
+                db = firebase.firestore();
+            }
         } catch (e) {
-            console.log("Firebase Init error: ", e);
+            console.error("Firebase Init Error:", e);
         }
 
         let deviceFingerprint = '';
         let globalVotes = {};
 
-        // 2. Generate Device Fingerprint (SHA-256)
         async function initFingerprint() {
             try {
                 const canvas = document.createElement('canvas');
@@ -237,4 +237,259 @@
                 ].join('###');
 
                 const msgUint8 = new TextEncoder().encode(fingerprintRaw);
-                const hashBuffer = await crypto.subtle.
+                const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                deviceFingerprint = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+            } catch (e) {
+                deviceFingerprint = 'device-' + Math.random().toString(36).substring(2);
+            }
+
+            listenToDatabase();
+        }
+
+        function listenToDatabase() {
+            const localData = localStorage.getItem('gwatongso_votes');
+            if (localData) {
+                globalVotes = JSON.parse(localData);
+                checkExistingVote();
+                renderStatus();
+            }
+
+            if (db) {
+                db.collection("votes").onSnapshot((snapshot) => {
+                    const fetchedVotes = {};
+                    snapshot.forEach((doc) => {
+                        fetchedVotes[doc.id] = doc.data();
+                    });
+                    
+                    globalVotes = { ...globalVotes, ...fetchedVotes };
+                    localStorage.setItem('gwatongso_votes', JSON.stringify(globalVotes));
+                    
+                    checkExistingVote();
+                    renderStatus();
+                }, (error) => {
+                    console.error("DB Sync Error (Rules Check Required):", error);
+                });
+            } else {
+                console.warn("DB is not initialized. Running in local-only fallback mode.");
+            }
+        }
+
+        function checkExistingVote() {
+            if (globalVotes[deviceFingerprint]) {
+                const myVote = globalVotes[deviceFingerprint];
+                document.getElementById('userName').value = myVote.name || '';
+                document.getElementById('food0').value = myVote.food0 || '';
+                document.getElementById('food1').value = myVote.food1 || '';
+                document.getElementById('dessert').value = myVote.dessert || '';
+                
+                document.getElementById('editNotice').classList.remove('hidden');
+                document.getElementById('submitBtnText').innerText = '투표 내용 수정하기';
+            }
+        }
+
+        function switchTab(tabName) {
+            const voteTab = document.getElementById('tab-vote');
+            const statusTab = document.getElementById('tab-status');
+            const voteSec = document.getElementById('section-vote');
+            const statusSec = document.getElementById('section-status');
+
+            if (tabName === 'vote') {
+                voteTab.className = "flex-1 py-2.5 rounded-lg text-sm font-semibold transition flex items-center justify-center space-x-2 bg-indigo-600 text-white shadow-md";
+                statusTab.className = "flex-1 py-2.5 rounded-lg text-sm font-semibold transition flex items-center justify-center space-x-2 text-slate-400 hover:text-white";
+                voteSec.classList.remove('hidden');
+                statusSec.classList.add('hidden');
+            } else {
+                statusTab.className = "flex-1 py-2.5 rounded-lg text-sm font-semibold transition flex items-center justify-center space-x-2 bg-indigo-600 text-white shadow-md";
+                voteTab.className = "flex-1 py-2.5 rounded-lg text-sm font-semibold transition flex items-center justify-center space-x-2 text-slate-400 hover:text-white";
+                statusSec.classList.remove('hidden');
+                voteSec.classList.add('hidden');
+                renderStatus();
+            }
+        }
+
+        async function handleVoteSubmit(e) {
+            e.preventDefault();
+            const name = document.getElementById('userName').value.trim();
+            const food0 = document.getElementById('food0').value.trim();
+            const food1 = document.getElementById('food1').value.trim();
+            const dessert = document.getElementById('dessert').value.trim();
+
+            if (!name || !food0) {
+                alert('성명과 음식점 0은 필수 입력 항목입니다.');
+                return;
+            }
+
+            const isUpdate = !!globalVotes[deviceFingerprint];
+            const voteData = {
+                name,
+                food0,
+                food1,
+                dessert,
+                updatedAt: new Date().toLocaleString()
+            };
+
+            globalVotes[deviceFingerprint] = voteData;
+            localStorage.setItem('gwatongso_votes', JSON.stringify(globalVotes));
+
+            if (db) {
+                try {
+                    await db.collection("votes").doc(deviceFingerprint).set(voteData);
+                } catch (err) {
+                    console.error("Cloud DB Save Error:", err);
+                    alert("서버 저장 중 오류가 발생했습니다. Firebase Firestore 규칙(Rules) 설정을 확인해주세요.");
+                    return;
+                }
+            } else {
+                alert("데이터베이스 연결을 확인할 수 없습니다. 로컬에만 저장됩니다.");
+            }
+
+            confetti({
+                particleCount: 80,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+
+            alert(isUpdate ? '투표 내용이 성공적으로 수정되었습니다!' : '투표가 완료되었습니다!');
+            switchTab('status');
+            checkExistingVote();
+        }
+
+        function renderStatus() {
+            const voteArray = Object.entries(globalVotes).map(([fp, data]) => ({ fp, ...data }));
+            
+            document.getElementById('totalCount').innerText = voteArray.length;
+
+            const foodCounts = {};
+            voteArray.forEach(v => {
+                if (v.food0) {
+                    const cleanName = v.food0.trim();
+                    foodCounts[cleanName] = (foodCounts[cleanName] || 0) + 1;
+                }
+            });
+
+            const sortedFood = Object.entries(foodCounts).sort((a, b) => b[1] - a[1]);
+            const rankingListEl = document.getElementById('topRankingList');
+            
+            if (sortedFood.length === 0) {
+                rankingListEl.innerHTML = `<p class="text-xs text-slate-400 text-center py-4">아직 제출된 투표가 없습니다.</p>`;
+            } else {
+                rankingListEl.innerHTML = sortedFood.slice(0, 3).map(([food, count], idx) => {
+                    const medals = ['text-amber-400', 'text-slate-300', 'text-amber-600'];
+                    return `
+                        <div class="flex items-center justify-between bg-slate-900/60 p-3 rounded-xl border border-slate-700/40">
+                            <div class="flex items-center space-x-3">
+                                <span class="font-black text-sm w-6 text-center ${medals[idx] || 'text-slate-400'}">${idx + 1}</span>
+                                <span class="text-sm font-semibold text-white">${food}</span>
+                            </div>
+                            <span class="text-xs bg-indigo-500/20 text-indigo-300 font-bold px-2.5 py-1 rounded-lg">${count}표</span>
+                        </div>
+                    `;
+                }).join('');
+            }
+
+            const allListEl = document.getElementById('allVotesList');
+            if (voteArray.length === 0) {
+                allListEl.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">등록된 데이터가 없습니다.</p>`;
+            } else {
+                allListEl.innerHTML = voteArray.map(v => {
+                    const isMyVote = (v.fp === deviceFingerprint);
+                    return `
+                        <div class="bg-slate-900/60 p-3.5 rounded-xl border ${isMyVote ? 'border-indigo-500/50 bg-indigo-950/20' : 'border-slate-700/40'} space-y-2">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center space-x-2">
+                                    <span class="font-bold text-sm text-white">${v.name}</span>
+                                    ${isMyVote ? '<span class="text-[10px] bg-indigo-600 text-white font-bold px-2 py-0.5 rounded-full">내 투표</span>' : ''}
+                                </div>
+                                <span class="text-[10px] text-slate-500">${v.updatedAt || ''}</span>
+                            </div>
+                            <div class="text-xs text-slate-300 space-y-1 bg-slate-800/40 p-2 rounded-lg">
+                                <div><strong class="text-indigo-400">음식점 0:</strong> ${v.food0}</div>
+                                ${v.food1 ? `<div><strong class="text-slate-400">음식점 1:</strong> ${v.food1}</div>` : ''}
+                                ${v.dessert ? `<div><strong class="text-slate-400">디저트:</strong> ${v.dessert}</div>` : ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        }
+
+        function openAdminModal() {
+            document.getElementById('adminModal').classList.remove('hidden');
+            document.getElementById('adminPw').value = '';
+            document.getElementById('adminLoginArea').classList.remove('hidden');
+            document.getElementById('adminControlArea').classList.add('hidden');
+        }
+
+        function closeAdminModal() {
+            document.getElementById('adminModal').classList.add('hidden');
+        }
+
+        function checkAdminPassword() {
+            const pw = document.getElementById('adminPw').value;
+            if (pw === '1029') {
+                document.getElementById('adminLoginArea').classList.add('hidden');
+                document.getElementById('adminControlArea').classList.remove('hidden');
+            } else {
+                alert('비밀번호가 틀렸습니다.');
+            }
+        }
+
+        function copyKakaoSummary() {
+            const voteArray = Object.values(globalVotes);
+            if (voteArray.length === 0) {
+                alert('복사할 데이터가 없습니다.');
+                return;
+            }
+
+            let text = `[과학화통제소 10월 회식 메뉴 투표 결과]\n총 참여 인원: ${voteArray.length}명\n\n`;
+            voteArray.forEach((v, i) => {
+                text += `${i + 1}. ${v.name}\n- 음식점0: ${v.food0}\n`;
+                if (v.food1) text += `- 음식점1: ${v.food1}\n`;
+                if (v.dessert) text += `- 디저트: ${v.dessert}\n`;
+                text += `\n`;
+            });
+
+            navigator.clipboard.writeText(text).then(() => {
+                alert('카카오톡 공유용 요약 텍스트가 클립보드에 복사되었습니다!');
+            });
+        }
+
+        function exportCSV() {
+            const voteArray = Object.values(globalVotes);
+            if (voteArray.length === 0) {
+                alert('다운로드할 데이터가 없습니다.');
+                return;
+            }
+
+            let csv = '\uFEFF성명,음식점0,음식점1,디저트가게,제출시간\n';
+            voteArray.forEach(v => {
+                csv += `"${v.name}","${v.food0}","${v.food1 || ''}","${v.dessert || ''}","${v.updatedAt || ''}"\n`;
+            });
+
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = '과학화통제소_10월회식투표.csv';
+            a.click();
+        }
+
+        async function resetAllData() {
+            if (confirm('모든 투표 데이터를 초기화하시겠습니까? 복구할 수 없습니다.')) {
+                localStorage.removeItem('gwatongso_votes');
+                if (db) {
+                    try {
+                        const snapshot = await db.collection("votes").get();
+                        snapshot.forEach(doc => doc.ref.delete());
+                    } catch(e) {}
+                }
+                alert('초기화되었습니다.');
+                location.reload();
+            }
+        }
+
+        window.onload = initFingerprint;
+    </script>
+</body>
+</html>
