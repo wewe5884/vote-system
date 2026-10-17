@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>과학화통제소 10월 회식 메뉴 투표</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts (Noto Sans KR) -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        navy: {
+                            800: '#1e293b',
+                            900: '#0f172a',
+                            950: '#020617',
+                        },
+                        military: {
+                            accent: '#2563eb',
+                            gold: '#f59e0b',
+                            bg: '#f8fafc',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Noto Sans KR', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f1f5f9;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<body class="text-slate-800 min-h-screen flex flex-col items-center justify-start pb-12">
+
+    <!-- Header Banner -->
+    <header class="w-full bg-slate-900 text-white shadow-md border-b-2 border-blue-600 sticky top-0 z-30">
+        <div class="max-w-md mx-auto px-4 py-4 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-blue-800 flex items-center justify-center font-bold text-lg shadow-md text-white">
+                    <i class="fa-solid fa-utensils"></i>
+                </div>
+                <div>
+                    <span class="text-[11px] font-bold text-blue-400 tracking-wider block">과학화통제소</span>
+                    <h1 class="text-base font-extrabold leading-tight">10월 회식 메뉴 투표</h1>
+                </div>
+            </div>
+            <button id="adminToggleBtn" onclick="openAdminModal()" class="text-xs bg-slate-800 hover:bg-slate-700 active:bg-slate-900 text-slate-300 px-3 py-1.5 rounded-lg border border-slate-700 transition flex items-center gap-1.5 shadow-sm">
+                <i class="fa-solid fa-user-shield text-blue-400 text-xs"></i>
+                <span>관리자</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Device Detection Badge Status Bar -->
+    <div class="max-w-md w-full px-4 mt-3">
+        <div id="deviceBadge" class="bg-slate-200/80 backdrop-blur-sm rounded-lg px-3 py-1.5 flex items-center justify-between text-[11px] text-slate-600 border border-slate-300/60">
+            <div class="flex items-center gap-1.5">
+                <i id="deviceIcon" class="fa-solid fa-spinner fa-spin text-blue-600"></i>
+                <span id="deviceText" class="font-medium">기기 고유 지문 식별 중...</span>
+            </div>
+            <span id="deviceIdShort" class="font-mono text-[10px] bg-slate-300/70 text-slate-700 px-1.5 py-0.5 rounded">ID: -----</span>
+        </div>
+    </div>
+
+    <!-- Notice Card -->
+    <div class="max-w-md w-full px-4 mt-3">
+        <div class="bg-blue-50/90 border-l-4 border-blue-600 p-3.5 rounded-r-xl shadow-sm border border-slate-200/50">
+            <div class="flex items-start">
+                <i class="fa-solid fa-circle-info text-blue-600 mt-0.5 mr-2.5 text-sm"></i>
+                <div class="text-xs text-slate-700 leading-relaxed">
+                    <p class="font-bold text-slate-900 mb-0.5">회식 일정: 10월 29일 (목요일)</p>
+                    <p class="text-slate-600"><strong class="text-blue-800">사천시 소재</strong> 및 <strong class="text-blue-800">10월 29일(목) 정상 영업 매장</strong> 기준 작성.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Tabs -->
+    <div class="max-w-md w-full px-4 mt-3">
+        <div class="flex rounded-xl bg-slate-200/80 p-1 text-xs font-bold border border-slate-300/50 shadow-inner">
+            <button id="tabVoteBtn" onclick="switchTab('vote')" class="flex-1 py-2.5 rounded-lg text-center transition bg-white text-blue-900 shadow-sm flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-pen-to-square"></i> 투표 제출
+            </button>
+            <button id="tabResultsBtn" onclick="switchTab('results')" class="flex-1 py-2.5 rounded-lg text-center transition text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1.5">
+                <i class="fa-solid fa-chart-pie"></i> 현황 보기 (<span id="voteCountBadge">0</span>)
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Content Container -->
+    <main class="max-w-md w-full px-4 mt-3 flex-1">
+
+        <!-- SECTION 1: VOTE FORM -->
+        <section id="voteSection" class="bg-white rounded-2xl shadow-sm border border-slate-200/80 p-5 space-y-4">
+            
+            <!-- Modify Alert (Shown if existing submission exists) -->
+            <div id="modifyAlert" class="hidden bg-amber-50 border border-amber-200/80 rounded-xl p-3 text-xs text-amber-800 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-arrows-rotate text-amber-600 text-sm"></i>
+                    <div>
+                        <p class="font-bold">기존 투표 제출 이력이 확인되었습니다.</p>
+                        <p class="text-[11px] text-amber-700">제출 시 기존 투표 내용이 업데이트됩니다.</p>
+                    </div>
+                </div>
+            </div>
+
+            <form id="voteForm" onsubmit="handleVoteSubmit(event)">
+                
+                <!-- Step 1: User Identity -->
+                <div class="space-y-3">
+                    <div class="flex items-center justify-between border-b pb-2 border-slate-100">
+                        <h2 class="text-xs font-extrabold text-slate-900 flex items-center gap-1.5">
+                            <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 text-[11px] flex items-center justify-center font-bold">1</span>
+                            인적 사항
+                        </h2>
+                        <span class="text-[10px] text-emerald-600 font-semibold flex items-center gap-1">
+                            <i class="fa-solid fa-shield-halved"></i> 기기 자동인증 적용됨
+                        </span>
+                    </div>
+
+                    <!-- Name Only -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">성명 <span class="text-red-500">*</span></label>
+                        <input type="text" id="userName" required class="w-full text-xs p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none font-medium">
+                    </div>
+                </div>
+
+                <!-- Step 2: Recommendations Input -->
+                <div class="space-y-3 pt-2">
+                    <div class="flex items-center justify-between border-b pb-2 border-slate-100">
+                        <h2 class="text-xs font-extrabold text-slate-900 flex items-center gap-1.5">
+                            <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 text-[11px] flex items-center justify-center font-bold">2</span>
+                            장소 추천 (사천시 소재)
+                        </h2>
+                    </div>
+
+                    <!-- Restaurant 0 -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">
+                            <i class="fa-solid fa-utensils text-blue-600 mr-1"></i> 음식점 0 <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" id="rest0" required class="w-full text-xs p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none">
+                    </div>
+
+                    <!-- Restaurant 1 -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">
+                            <i class="fa-solid fa-utensils text-blue-600 mr-1"></i> 음식점 1 <span class="text-slate-400 font-normal">(선택)</span>
+                        </label>
+                        <input type="text" id="rest1" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none">
+                    </div>
+
+                    <!-- Dessert -->
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">
+                            <i class="fa-solid fa-mug-hot text-amber-500 mr-1"></i> 디저트 가게 <span class="text-slate-400 font-normal">(선택)</span>
+                        </label>
+                        <input type="text" id="dessert" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none">
+                    </div>
+                </div>
+
+                <!-- Form Message -->
+                <div id="formMsg" class="hidden p-3 rounded-xl text-xs font-semibold"></div>
+
+                <!-- Submit Button -->
+                <button type="submit" id="submitBtn" class="w-full py-3 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-xs font-extrabold rounded-xl shadow-md transition duration-150 flex items-center justify-center gap-2 mt-2">
+                    <i id="submitIcon" class="fa-solid fa-paper-plane"></i>
+                    <span id="submitBtnText">투표 제출하기</span>
+                </button>
+            </form>
+        </section>
+
+        <!-- SECTION 2: RESULTS VIEW -->
+        <section id="resultsSection" class="hidden space-y-3">
+            <!-- Summary Header Card -->
+            <div class="bg-slate-900 text-white rounded-2xl p-4 shadow-sm space-y-2 border border-slate-800">
+                <div class="flex justify-between items-center">
+                    <span class="text-xs text-slate-400 font-semibold">총 참여 인원</span>
+                    <span id="summaryCount" class="text-xl font-extrabold text-blue-400">0 명</span>
+                </div>
+                <p class="text-[11px] text-slate-400 leading-relaxed border-t border-slate-800 pt-2 mt-1">
+                    <i class="fa-solid fa-lock text-emerald-400 mr-1"></i> 기기 고유 Fingerprint로 중복 투표가 차단되었습니다.
+                </p>
+            </div>
+
+            <!-- Top Suggestions Summary -->
+            <div class="bg-white rounded-2xl p-4 border border-slate-200/80 shadow-sm">
+                <h3 class="text-xs font-extrabold text-slate-800 mb-3 flex items-center gap-1.5">
+                    <i class="fa-solid fa-fire text-orange-500"></i> 실시간 최다 언급 가게 Top 3
+                </h3>
+                <div id="topMentioned" class="space-y-2">
+                    <p class="text-xs text-slate-400 text-center py-2">아직 집계된 데이터가 없습니다.</p>
+                </div>
+            </div>
+
+            <!-- Live Submissions List -->
+            <div id="submissionList" class="space-y-2.5">
+                <!-- Dynamically Rendered Cards -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ADMIN MODAL -->
+    <div id="adminModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-5 space-y-4 shadow-2xl border border-slate-100">
+            <div class="flex justify-between items-center border-b pb-3 border-slate-100">
+                <h3 class="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                    <i class="fa-solid fa-user-shield text-blue-600"></i> 관리자 인증
+                </h3>
+                <button onclick="closeAdminModal()" class="text-slate-400 hover:text-slate-600 p-1">
+                    <i class="fa-solid fa-xmark text-base"></i>
+                </button>
+            </div>
+
+            <div id="adminAuthBody" class="space-y-3">
+                <p class="text-xs text-slate-600">관리자 비밀번호를 입력해주세요.</p>
+                <input type="password" id="adminPasswordInput" placeholder="비밀번호 입력" class="w-full text-xs p-2.5 bg-slate-50 border border-slate-300 rounded-xl outline-none focus:ring-2 focus:ring-blue-500">
+                <div id="adminAuthErr" class="text-xs text-red-500 hidden font-semibold">비밀번호가 일치하지 않습니다.</div>
+                <button onclick="verifyAdmin()" class="w-full py-2.5 bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold rounded-xl transition">
+                    인증하기
+                </button>
+            </div>
+
+            <!-- Admin Controls -->
+            <div id="adminControlBody" class="hidden space-y-2.5">
+                <div class="p-2.5 bg-emerald-50 text-emerald-800 text-xs rounded-xl font-semibold flex items-center gap-1.5 border border-emerald-200">
+                    <i class="fa-solid fa-circle-check"></i> 관리자 권한 활성화됨
+                </div>
+                <button onclick="copyResultsText()" class="w-full py-2.5 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700 transition flex items-center justify-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-copy"></i> 카톡 공유용 전체 요약 복사
+                </button>
+                <button onclick="exportToCSV()" class="w-full py-2.5 bg-slate-700 text-white text-xs font-bold rounded-xl hover:bg-slate-800 transition flex items-center justify-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-file-csv"></i> 엑셀(CSV) 다운로드
+                </button>
+                <button onclick="clearAllData()" class="w-full py-2.5 bg-red-50 text-red-600 border border-red-200 text-xs font-bold rounded-xl hover:bg-red-100 transition flex items-center justify-center gap-1.5">
+                    <i class="fa-solid fa-trash-can"></i> 전체 데이터 초기화
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed bottom-5 left-1/2 -translate-x-1/2 bg-slate-900/95 text-white text-xs px-4 py-2.5 rounded-full shadow-xl transition-all duration-300 opacity-0 pointer-events-none z-50 flex items-center gap-2 border border-slate-700">
+        <i id="toastIcon" class="fa-solid fa-check text-emerald-400"></i>
+        <span id="toastMsg">처리되었습니다.</span>
+    </div>
+
+    <!-- Application Script Logic -->
+    <script>
+        const STORAGE_KEY = 'KWT_OCT_VOTES_FP_2026';
+        let deviceFingerprintHash = '';
+        let isAdmin = false;
+
+        // Initialize application on load
+        window.addEventListener('DOMContentLoaded', async () => {
+            await generateDeviceFingerprint();
+            checkExistingVoteForDevice();
+            renderResults();
+        });
+
+        // 1. ADVANCED BROWSER FINGERPRINTING GENERATOR (SHA-256)
+        async function generateDeviceFingerprint() {
+            try {
+                // Collect Browser & Hardware Signals
+                const signals = [];
+                signals.push(navigator.userAgent);
+                signals.push(navigator.language);
+                signals.push(screen.width + 'x' + screen.height + 'x' + screen.colorDepth);
+                signals.push(new Date().getTimezoneOffset());
+                signals.push(navigator.hardwareConcurrency || 'unknown');
+                signals.push(navigator.deviceMemory || 'unknown');
+
+                // Canvas Rendering Fingerprint Signal
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                if (ctx) {
+                    canvas.width = 200;
+                    canvas.height = 50;
+                    ctx.textBaseline = "top";
+                    ctx.font = "14px 'Arial'";
+                    ctx.textBaseline = "alphabetic";
+                    ctx.fillStyle = "#f60";
+                    ctx.fillRect(125,1,62,20);
+                    ctx.fillStyle = "#069";
+                    ctx.fillText("KWT_VOTE_2026_SACHEON", 2, 15);
+                    ctx.fillStyle = "rgba(102, 204, 0, 0.7)";
+                    ctx.fillText("KWT_VOTE_2026_SACHEON", 4, 17);
+                    signals.push(canvas.toDataURL());
+                }
+
+                // WebGL Renderer Signal
+                try {
+                    const glCanvas = document.createElement('canvas');
+                    const gl = glCanvas.getContext('webgl') || glCanvas.getContext('experimental-webgl');
+                    if (gl) {
+                        const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+                        if (debugInfo) {
+                            signals.push(gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL));
+                            signals.push(gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL));
+                        }
+                    }
+                } catch(e) {}
+
+                // Hash combined signals with SHA-256
+                const rawString = signals.join('||');
+                const msgUint8 = new TextEncoder().encode(rawString);
+                const hashBuffer = await crypto.subtle.digest('SHA-256', msgUint8);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                deviceFingerprintHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+
+                // Update UI Badge
+                document.getElementById('deviceIcon').className = 'fa-solid fa-mobile-screen-button text-emerald-600';
+                document.getElementById('deviceText').innerText = '기기 고유지문 인증 완료';
+                document.getElementById('deviceIdShort').innerText = 'ID: ' + deviceFingerprintHash.substring(0, 8).toUpperCase();
+            } catch (err) {
+                console.error("Fingerprint error:", err);
+                deviceFingerprintHash = 'FALLBACK_' + (navigator.userAgent.replace(/\D/g, '') || 'DEVICE');
+                document.getElementById('deviceIcon').className = 'fa-solid fa-check text-blue-600';
+                document.getElementById('deviceText').innerText = '기기 식별 완료';
+                document.getElementById('deviceIdShort').innerText = 'ID: FB-' + deviceFingerprintHash.substring(0, 5);
+            }
+        }
+
+        // 2. LocalStorage Helpers
+        function getVotes() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                return raw ? JSON.parse(raw) : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function saveVotes(votes) {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(votes));
+        }
+
+        // 3. Auto-detect Existing Submission for this Device
+        function checkExistingVoteForDevice() {
+            if (!deviceFingerprintHash) return;
+            const votes = getVotes();
+            const myVote = votes.find(v => v.fp === deviceFingerprintHash);
+
+            if (myVote) {
+                // Populate Form with previous data
+                document.getElementById('userName').value = myVote.name;
+                document.getElementById('rest0').value = myVote.rest0;
+                document.getElementById('rest1').value = myVote.rest1 || '';
+                document.getElementById('dessert').value = myVote.dessert || '';
+
+                // UI updates for modification mode
+                document.getElementById('modifyAlert').classList.remove('hidden');
+                document.getElementById('submitBtnText').innerText = '내 투표 수정하기';
+                document.getElementById('submitIcon').className = 'fa-solid fa-pen-to-square';
+                document.getElementById('submitBtn').className = "w-full py-3 bg-amber-600 hover:bg-amber-700 active:bg-amber-800 text-white text-xs font-extrabold rounded-xl shadow-md transition duration-150 flex items-center justify-center gap-2 mt-2";
+            }
+        }
+
+        // 4. Vote Submission Logic
+        function handleVoteSubmit(e) {
+            e.preventDefault();
+
+            const name = document.getElementById('userName').value.trim();
+            const rest0 = document.getElementById('rest0').value.trim();
+            const rest1 = document.getElementById('rest1').value.trim();
+            const dessert = document.getElementById('dessert').value.trim();
+
+            if (!name || !rest0) {
+                showFormMsg('필수 항목(성명, 음식점 0)을 작성해주세요.', 'error');
+                return;
+            }
+
+            let votes = getVotes();
+            const existingIndex = votes.findIndex(v => v.fp === deviceFingerprintHash);
+
+            const votePayload = {
+                fp: deviceFingerprintHash,
+                name,
+                rest0,
+                rest1,
+                dessert,
+                updatedAt: new Date().toLocaleString('ko-KR')
+            };
+
+            if (existingIndex !== -1) {
+                // Update Existing Vote
+                votes[existingIndex] = votePayload;
+                saveVotes(votes);
+                showToast('투표 내용이 수정되었습니다.');
+            } else {
+                // New Vote Entry
+                votes.push(votePayload);
+                saveVotes(votes);
+                showToast('투표가 완료되었습니다!');
+            }
+
+            hideFormMsg();
+            checkExistingVoteForDevice();
+
+            // Switch to Results after brief delay
+            setTimeout(() => {
+                switchTab('results');
+            }, 600);
+        }
+
+        // 5. UI Tab Switcher
+        function switchTab(tab) {
+            const voteSec = document.getElementById('voteSection');
+            const resSec = document.getElementById('resultsSection');
+            const tabVoteBtn = document.getElementById('tabVoteBtn');
+            const tabResultsBtn = document.getElementById('tabResultsBtn');
+
+            if (tab === 'vote') {
+                voteSec.classList.remove('hidden');
+                resSec.classList.add('hidden');
+                tabVoteBtn.className = "flex-1 py-2.5 rounded-lg text-center transition bg-white text-blue-900 shadow-sm flex items-center justify-center gap-1.5 font-bold";
+                tabResultsBtn.className = "flex-1 py-2.5 rounded-lg text-center transition text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1.5 font-bold";
+            } else {
+                voteSec.classList.add('hidden');
+                resSec.classList.remove('hidden');
+                tabVoteBtn.className = "flex-1 py-2.5 rounded-lg text-center transition text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1.5 font-bold";
+                tabResultsBtn.className = "flex-1 py-2.5 rounded-lg text-center transition bg-white text-blue-900 shadow-sm flex items-center justify-center gap-1.5 font-bold";
+                renderResults();
+            }
+        }
+
+        // 6. Render Results & Statistics
+        function renderResults() {
+            const votes = getVotes();
+            document.getElementById('voteCountBadge').innerText = votes.length;
+            document.getElementById('summaryCount').innerText = `${votes.length} 명`;
+
+            const listEl = document.getElementById('submissionList');
+            const topEl = document.getElementById('topMentioned');
+
+            if (votes.length === 0) {
+                listEl.innerHTML = `
+                    <div class="bg-white rounded-2xl p-8 text-center text-xs text-slate-400 border border-slate-200">
+                        <i class="fa-solid fa-inbox text-3xl mb-2 text-slate-300 block"></i>
+                        아직 제출된 투표가 없습니다.<br>첫 번째로 추천을 남겨보세요!
+                    </div>`;
+                topEl.innerHTML = `<p class="text-xs text-slate-400 text-center py-2">아직 집계된 데이터가 없습니다.</p>`;
+                return;
+            }
+
+            // Top Mentioned Calculations
+            const placeCounts = {};
+            votes.forEach(v => {
+                [v.rest0, v.rest1, v.dessert].forEach(p => {
+                    if (p && p.trim()) {
+                        const nameClean = p.trim();
+                        placeCounts[nameClean] = (placeCounts[nameClean] || 0) + 1;
+                    }
+                });
+            });
+
+            const sortedPlaces = Object.entries(placeCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 3);
+
+            if (sortedPlaces.length > 0) {
+                topEl.innerHTML = sortedPlaces.map(([place, count], idx) => {
+                    const rankColors = [
+                        'bg-amber-400 text-white',
+                        'bg-slate-300 text-slate-700',
+                        'bg-amber-700/60 text-white'
+                    ];
+                    return `
+                        <div class="flex items-center justify-between p-2.5 rounded-xl bg-slate-50 text-xs border border-slate-100">
+                            <span class="font-bold text-slate-800 flex items-center gap-2">
+                                <span class="w-5 h-5 rounded-full ${rankColors[idx] || 'bg-slate-200'} text-[11px] flex items-center justify-center font-extrabold shadow-sm">${idx + 1}</span>
+                                ${escapeHtml(place)}
+                            </span>
+                            <span class="text-blue-600 font-extrabold bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">${count}회 언급</span>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                topEl.innerHTML = `<p class="text-xs text-slate-400 text-center py-2">추천 데이터가 없습니다.</p>`;
+            }
+
+            // Render Submission List Cards
+            listEl.innerHTML = votes.slice().reverse().map((item, idx) => {
+                const actualIndex = votes.length - 1 - idx;
+                const isMyDevice = (item.fp === deviceFingerprintHash);
+
+                return `
+                    <div class="bg-white rounded-2xl p-4 border ${isMyDevice ? 'border-blue-400 ring-2 ring-blue-100' : 'border-slate-200/80'} shadow-sm space-y-2 relative">
+                        <div class="flex justify-between items-center border-b border-slate-100 pb-2">
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs font-bold text-slate-900">${escapeHtml(item.name)}</span>
+                                ${isMyDevice ? `<span class="text-[10px] bg-blue-600 text-white px-1.5 py-0.2 rounded font-semibold">내 투표</span>` : ''}
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="text-[10px] text-slate-400">${item.updatedAt || ''}</span>
+                                ${isAdmin ? `
+                                    <button onclick="deleteVote(${actualIndex})" class="text-red-500 hover:text-red-700 text-xs p-1">
+                                        <i class="fa-solid fa-trash-can"></i>
+                                    </button>
+                                ` : ''}
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 gap-1 text-xs text-slate-700 pt-0.5">
+                            <div class="flex items-start gap-1.5">
+                                <span class="text-blue-600 font-bold w-16 shrink-0"><i class="fa-solid fa-utensils mr-1"></i>음식점 0:</span>
+                                <span class="font-bold text-slate-900">${escapeHtml(item.rest0)}</span>
+                            </div>
+                            ${item.rest1 ? `
+                            <div class="flex items-start gap-1.5">
+                                <span class="text-slate-500 font-medium w-16 shrink-0"><i class="fa-solid fa-utensils mr-1"></i>음식점 1:</span>
+                                <span class="text-slate-700">${escapeHtml(item.rest1)}</span>
+                            </div>` : ''}
+                            ${item.dessert ? `
+                            <div class="flex items-start gap-1.5">
+                                <span class="text-amber-600 font-medium w-16 shrink-0"><i class="fa-solid fa-mug-hot mr-1"></i>디저트:</span>
+                                <span class="text-slate-700">${escapeHtml(item.dessert)}</span>
+                            </div>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 7. Admin Functions
+        function openAdminModal() {
+            document.getElementById('adminModal').classList.remove('hidden');
+            document.getElementById('adminPasswordInput').value = '';
+            document.getElementById('adminAuthErr').classList.add('hidden');
+        }
+
+        function closeAdminModal() {
+            document.getElementById('adminModal').classList.add('hidden');
+        }
+
+        function verifyAdmin() {
+            const pwd = document.getElementById('adminPasswordInput').value;
+            if (pwd === '1029') {
+                isAdmin = true;
+                document.getElementById('adminAuthBody').classList.add('hidden');
+                document.getElementById('adminControlBody').classList.remove('hidden');
+                renderResults();
+                showToast('관리자 권한이 인증되었습니다.');
+            } else {
+                document.getElementById('adminAuthErr').classList.remove('hidden');
+            }
+        }
+
+        function deleteVote(index) {
+            if (!confirm('해당 제출 건을 삭제하시겠습니까?')) return;
+            let votes = getVotes();
+            votes.splice(index, 1);
+            saveVotes(votes);
+            renderResults();
+            checkExistingVoteForDevice();
+            showToast('삭제되었습니다.');
+        }
+
+        function clearAllData() {
+            if (!confirm('모든 투표 데이터를 초기화하시겠습니까? 복구 불가능합니다.')) return;
+            localStorage.removeItem(STORAGE_KEY);
+            renderResults();
+            location.reload();
+        }
+
+        function copyResultsText() {
+            const votes = getVotes();
+            if (votes.length === 0) {
+                alert('복사할 데이터가 없습니다.');
+                return;
+            }
+
+            let text = `[과학화통제소 10월 회식 제출 현황 (총 ${votes.length}명)]\n`;
+            votes.forEach((v, idx) => {
+                text += `\n${idx + 1}. ${v.name}\n`;
+                text += ` - 음식점 0: ${v.rest0}\n`;
+                if (v.rest1) text += ` - 음식점 1: ${v.rest1}\n`;
+                if (v.dessert) text += ` - 디저트: ${v.dessert}\n`;
+            });
+
+            const tempTextArea = document.createElement('textarea');
+            tempTextArea.value = text;
+            document.body.appendChild(tempTextArea);
+            tempTextArea.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempTextArea);
+
+            showToast('카톡 공유용 요약문이 복사되었습니다!');
+        }
+
+        function exportToCSV() {
+            const votes = getVotes();
+            if (votes.length === 0) {
+                alert('다운로드할 데이터가 없습니다.');
+                return;
+            }
+
+            let csvContent = "\uFEFF성명,음식점0,음식점1,디저트가게,제출시간,기기ID\n";
+            votes.forEach(v => {
+                csvContent += `"${v.name}","${v.rest0}","${v.rest1 || ''}","${v.dessert || ''}","${v.updatedAt || ''}","${(v.fp || '').substring(0,8)}"\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.setAttribute('href', url);
+            link.setAttribute('download', `과학화통제소_10월회식투표_${new Date().toISOString().slice(0,10)}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        // Utilities
+        function showFormMsg(msg, type) {
+            const el = document.getElementById('formMsg');
+            el.classList.remove('hidden', 'bg-red-50', 'text-red-700', 'bg-emerald-50', 'text-emerald-700');
+            if (type === 'error') {
+                el.classList.add('bg-red-50', 'text-red-700');
+            } else {
+                el.classList.add('bg-emerald-50', 'text-emerald-700');
+            }
+            el.innerText = msg;
+        }
+
+        function hideFormMsg() {
+            document.getElementById('formMsg').classList.add('hidden');
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = msg;
+            toast.classList.remove('opacity-0', 'pointer-events-none');
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'pointer-events-none');
+            }, 2300);
+        }
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, "&amp;")
+                      .replace(/</g, "&lt;")
+                      .replace(/>/g, "&gt;")
+                      .replace(/"/g, "&quot;")
+                      .replace(/'/g, "&#039;");
+        }
+    </script>
+</body>
+</html>
