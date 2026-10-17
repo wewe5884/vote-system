@@ -211,17 +211,13 @@
                 deviceFingerprint = 'device-' + Math.random().toString(36).substring(2);
             }
 
+            // 기존 로컬 캐시 삭제 후 DB 실시간 연결
+            localStorage.removeItem('gwatongso_votes');
             listenToDatabase();
         }
 
+        // 파이어베이스 100% 동기화 (로컬 병합 제거)
         function listenToDatabase() {
-            const localData = localStorage.getItem('gwatongso_votes');
-            if (localData) {
-                globalVotes = JSON.parse(localData);
-                checkExistingVote();
-                renderStatus();
-            }
-
             if (db) {
                 db.collection("votes").onSnapshot((snapshot) => {
                     const fetchedVotes = {};
@@ -229,9 +225,7 @@
                         fetchedVotes[doc.id] = doc.data();
                     });
                     
-                    globalVotes = { ...globalVotes, ...fetchedVotes };
-                    localStorage.setItem('gwatongso_votes', JSON.stringify(globalVotes));
-                    
+                    globalVotes = fetchedVotes; // DB 원본으로만 갱신
                     checkExistingVote();
                     renderStatus();
                 }, (error) => {
@@ -250,6 +244,9 @@
                 
                 document.getElementById('editNotice').classList.remove('hidden');
                 document.getElementById('submitBtnText').innerText = '투표 내용 수정하기';
+            } else {
+                document.getElementById('editNotice').classList.add('hidden');
+                document.getElementById('submitBtnText').innerText = '투표 내용 제출하기';
             }
         }
 
@@ -294,9 +291,6 @@
                 updatedAt: new Date().toLocaleString()
             };
 
-            globalVotes[deviceFingerprint] = voteData;
-            localStorage.setItem('gwatongso_votes', JSON.stringify(globalVotes));
-
             if (db) {
                 try {
                     await db.collection("votes").doc(deviceFingerprint).set(voteData);
@@ -310,11 +304,13 @@
             confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
             alert(isUpdate ? '투표 내용이 성공적으로 수정되었습니다!' : '투표가 완료되었습니다!');
             switchTab('status');
-            checkExistingVote();
         }
 
         function renderStatus() {
-            const voteArray = Object.entries(globalVotes).map(([fp, data]) => ({ fp, ...data }));
+            const voteArray = Object.entries(globalVotes)
+                .map(([fp, data]) => ({ fp, ...data }))
+                .filter(v => v.name && v.food0); // 잘못된 빈 데이터 필터링
+
             document.getElementById('totalCount').innerText = voteArray.length;
 
             const foodCounts = {};
