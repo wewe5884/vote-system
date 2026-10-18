@@ -19,6 +19,27 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col justify-between selection:bg-indigo-500 selection:text-white">
 
+    <!-- Browser Block Screen (카카오톡 외 브라우저 접속 시 노출) -->
+    <div id="browserBlockModal" class="fixed inset-0 bg-slate-900 z-[9999] hidden flex items-center justify-center p-6 text-center">
+        <div class="bg-slate-800 border border-slate-700 rounded-3xl p-8 max-w-sm w-full space-y-5 shadow-2xl">
+            <div class="bg-amber-500/20 text-amber-400 w-16 h-16 rounded-2xl mx-auto flex items-center justify-center text-3xl">
+                <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div class="space-y-2">
+                <h2 class="font-bold text-white text-lg">카카오톡 접속 전용 시스템</h2>
+                <p class="text-xs text-slate-300 leading-relaxed">
+                    중복 투표 방지 및 원활한 참여를 위해<br>
+                    <strong class="text-indigo-400">카카오톡 앱 내에서만</strong> 투표가 가능합니다.<br><br>
+                    링크를 복사하여 카카오톡 채팅창에 붙여넣은 뒤 접속해 주세요!
+                </p>
+            </div>
+            <button onclick="copyCurrentUrl()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-3 rounded-xl text-sm transition shadow-lg shadow-indigo-600/30 flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-copy"></i>
+                <span>현재 주소 복사하기</span>
+            </button>
+        </div>
+    </div>
+
     <!-- Header -->
     <header class="bg-slate-800/80 backdrop-blur-md border-b border-slate-700/50 sticky top-0 z-50">
         <div class="max-w-xl mx-auto px-4 py-3.5 flex items-center justify-between">
@@ -54,7 +75,7 @@
                     <p class="text-slate-300 leading-relaxed text-xs sm:text-sm">
                         • <strong>일시:</strong> 10월 29일 (목)<br>
                         • <strong>대상:</strong> 사천시 소재, 당일 영업 매장<br>
-                        • 이 기기에서 최초 제출 후 언제든 다시 들어와 수정할 수 있습니다.
+                        • 카카오톡 접속 기기 기준으로 중복이 방지됩니다.
                     </p>
                 </div>
             </div>
@@ -123,7 +144,6 @@
         <!-- Tab 2: Status View -->
         <div id="section-status" class="hidden space-y-6">
             
-            <!-- Participation Count Badge -->
             <div class="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-4 flex items-center justify-between shadow-xl">
                 <span class="text-xs text-slate-400 font-medium">현재 총 투표 참여 인원</span>
                 <span class="text-sm font-bold bg-indigo-500/20 text-indigo-300 px-3 py-1 rounded-full border border-indigo-500/30">
@@ -131,40 +151,30 @@
                 </span>
             </div>
 
-            <!-- Top 3 Integrated Restaurants (Food 0 + Food 1) -->
             <div class="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 backdrop-blur-sm shadow-xl">
                 <h3 class="font-bold text-white text-sm mb-4 flex items-center space-x-2">
                     <i class="fa-solid fa-fire text-amber-400"></i>
                     <span>통합 음식점 추천 TOP 3 (음식점 0+1 합산)</span>
                 </h3>
-                <div id="topRestaurantRankingList" class="space-y-3">
-                    <!-- Dynamically injected -->
-                </div>
+                <div id="topRestaurantRankingList" class="space-y-3"></div>
             </div>
 
-            <!-- Top 3 Desserts -->
             <div class="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-5 backdrop-blur-sm shadow-xl">
                 <h3 class="font-bold text-white text-sm mb-4 flex items-center space-x-2">
                     <i class="fa-solid fa-ice-cream text-pink-400"></i>
                     <span>디저트 가게 추천 TOP 3</span>
                 </h3>
-                <div id="topDessertRankingList" class="space-y-3">
-                    <!-- Dynamically injected -->
-                </div>
+                <div id="topDessertRankingList" class="space-y-3"></div>
             </div>
 
-            <!-- My Vote Section (Visible to User) -->
             <div id="myVoteContainer" class="bg-slate-800/60 border border-indigo-500/30 rounded-2xl p-5 backdrop-blur-sm shadow-xl hidden">
                 <h3 class="font-bold text-white text-sm mb-3 flex items-center space-x-2">
                     <i class="fa-solid fa-user-check text-indigo-400"></i>
                     <span>내가 제출한 투표 내역</span>
                 </h3>
-                <div id="myVoteDetail" class="bg-slate-900/80 p-3.5 rounded-xl border border-indigo-500/40 space-y-2">
-                    <!-- Dynamically injected -->
-                </div>
+                <div id="myVoteDetail" class="bg-slate-900/80 p-3.5 rounded-xl border border-indigo-500/40 space-y-2"></div>
             </div>
 
-            <!-- Admin Only: All Votes List -->
             <div id="adminVotesSection" class="bg-slate-800/60 border border-amber-500/40 rounded-2xl p-5 backdrop-blur-sm shadow-xl hidden">
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="font-bold text-amber-300 text-sm flex items-center space-x-2">
@@ -172,9 +182,7 @@
                         <span>전체 제출 내역 (관리자 모드 전용)</span>
                     </h3>
                 </div>
-                <div id="allVotesList" class="space-y-3 max-h-[450px] overflow-y-auto pr-1">
-                    <!-- Dynamically injected -->
-                </div>
+                <div id="allVotesList" class="space-y-3 max-h-[450px] overflow-y-auto pr-1"></div>
             </div>
 
         </div>
@@ -240,7 +248,31 @@
         let globalVotes = {};
         let isAdminLoggedIn = false;
 
+        // 카카오톡 인앱 브라우저 체크 후 차단 실행
+        function checkKakaoInApp() {
+            const userAgent = navigator.userAgent.toLowerCase();
+            const isKakao = userAgent.indexOf('kakaotalk') !== -1;
+            
+            // 테스트 편의상 PC나 강제 오픈 시 주소창에 ?force=true 를 넣으면 통과되도록 예외 처리 가능
+            const urlParams = new URLSearchParams(window.location.search);
+            const isForce = urlParams.get('force') === 'true';
+
+            if (!isKakao && !isForce) {
+                document.getElementById('browserBlockModal').classList.remove('hidden');
+                return false;
+            }
+            return true;
+        }
+
+        function copyCurrentUrl() {
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                alert('주소가 복사되었습니다! 카카오톡 채팅창에 붙여넣어 접속해주세요.');
+            });
+        }
+
         async function initFingerprint() {
+            if (!checkKakaoInApp()) return; // 카카오톡이 아니면 중단
+
             try {
                 const canvas = document.createElement('canvas');
                 const ctx = canvas.getContext('2d');
@@ -369,7 +401,6 @@
             const voteArray = Object.entries(globalVotes).map(([fp, data]) => ({ fp, ...data }));
             document.getElementById('totalCount').innerText = voteArray.length;
 
-            // 1. 음식점 0 + 음식점 1 통합 랭킹 계산
             const restaurantCounts = {};
             voteArray.forEach(v => {
                 if (v.food0) {
@@ -402,7 +433,6 @@
                 }).join('');
             }
 
-            // 2. 디저트 가게 랭킹 계산
             const dessertCounts = {};
             voteArray.forEach(v => {
                 if (v.dessert) {
@@ -431,7 +461,6 @@
                 }).join('');
             }
 
-            // 3. 일반 유저용: 내 투표 내역 표시
             const myVoteContainer = document.getElementById('myVoteContainer');
             const myVoteDetail = document.getElementById('myVoteDetail');
             const myVoteData = globalVotes[deviceFingerprint];
@@ -453,7 +482,6 @@
                 myVoteContainer.classList.add('hidden');
             }
 
-            // 4. 관리자 전용: 전체 제출 목록 표시
             const adminVotesSection = document.getElementById('adminVotesSection');
             const allListEl = document.getElementById('allVotesList');
 
