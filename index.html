@@ -75,7 +75,7 @@
                     <p class="text-slate-300 leading-relaxed text-xs sm:text-sm">
                         • <strong>일시:</strong> 10월 29일 (목)<br>
                         • <strong>대상:</strong> 사천시 소재, 당일 영업 매장<br>
-                        • 카카오톡 접속 기기 기준으로 중복이 방지됩니다.
+                        • 본인 이름을 선택하여 투표해주세요. (이미 완료된 이름은 선택 불가)
                     </p>
                 </div>
             </div>
@@ -102,10 +102,12 @@
                     <span>이 기기로 이미 제출한 내역이 있습니다. 내용을 수정하여 다시 제출할 수 있습니다.</span>
                 </div>
 
-                <!-- Personal Info -->
+                <!-- Personal Info (Dropdown) -->
                 <div>
-                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">성명</label>
-                    <input type="text" id="userName" required class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
+                    <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">성명 <span class="text-rose-400">*</span></label>
+                    <select id="userName" required class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
+                        <option value="">-- 성명을 선택하세요 (총 38명) --</option>
+                    </select>
                 </div>
 
                 <hr class="border-slate-700/50">
@@ -116,21 +118,21 @@
                         <label class="block text-xs font-semibold text-indigo-400 uppercase tracking-wider mb-1">
                             음식점 0 <span class="text-rose-400">*</span>
                         </label>
-                        <input type="text" id="food0" required class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
+                        <input type="text" id="food0" required placeholder="예: 서브웨이" class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
                     </div>
 
                     <div>
                         <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
                             음식점 1 <span class="text-slate-500 text-xs">(선택)</span>
                         </label>
-                        <input type="text" id="food1" class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
+                        <input type="text" id="food1" placeholder="예: BBQ" class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
                     </div>
 
                     <div>
                         <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1">
                             디저트 가게 <span class="text-slate-500 text-xs">(선택)</span>
                         </label>
-                        <input type="text" id="dessert" class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
+                        <input type="text" id="dessert" placeholder="예: 쥬씨" class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
                     </div>
                 </div>
 
@@ -147,7 +149,7 @@
             <div class="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-4 flex items-center justify-between shadow-xl">
                 <span class="text-xs text-slate-400 font-medium">현재 총 투표 참여 인원</span>
                 <span class="text-sm font-bold bg-indigo-500/20 text-indigo-300 px-3 py-1 rounded-full border border-indigo-500/30">
-                    <span id="totalCount">0</span>명 참여 중
+                    <span id="totalCount">0</span> / 38명 참여 중
                 </span>
             </div>
 
@@ -224,6 +226,13 @@
     </div>
 
     <script>
+        const memberList = [
+            "엄현승", "이동현", "양시은", "김민성", "안성모", "정세윤", "박효준", "서호성", "김건희", "박성준", 
+            "김수완", "백승원", "백성욱", "신익현", "문지윤", "박윤범", "윤우진", "문서진", "이동권", "이영탁", 
+            "김도현", "이종민", "유정수", "이승혁", "육지환", "임하윤", "한종균", "정동하", "최신성", "김유성", 
+            "채승훈", "김민준", "이주성", "안지원", "최성민", "이승준", "김민기", "정윤재"
+        ];
+
         const firebaseConfig = {
             apiKey: "AIzaSyCudJINOYA-75Irawd26GvgwNCqPz-I6uQ",
             authDomain: "guatonguesaw.firebaseapp.com",
@@ -248,12 +257,9 @@
         let globalVotes = {};
         let isAdminLoggedIn = false;
 
-        // 카카오톡 인앱 브라우저 체크 후 차단 실행
         function checkKakaoInApp() {
             const userAgent = navigator.userAgent.toLowerCase();
             const isKakao = userAgent.indexOf('kakaotalk') !== -1;
-            
-            // 테스트 편의상 PC나 강제 오픈 시 주소창에 ?force=true 를 넣으면 통과되도록 예외 처리 가능
             const urlParams = new URLSearchParams(window.location.search);
             const isForce = urlParams.get('force') === 'true';
 
@@ -271,7 +277,7 @@
         }
 
         async function initFingerprint() {
-            if (!checkKakaoInApp()) return; // 카카오톡이 아니면 중단
+            if (!checkKakaoInApp()) return;
 
             try {
                 const canvas = document.createElement('canvas');
@@ -313,11 +319,48 @@
                     });
                     
                     globalVotes = fetchedVotes;
+                    updateNameDropdown();
                     checkExistingVote();
                     renderStatus();
                 }, (error) => {
                     console.error("DB Sync Error:", error);
                 });
+            }
+        }
+
+        // 38명 드롭다운 갱신 (중복된 이름은 disabled 처리)
+        function updateNameDropdown() {
+            const selectEl = document.getElementById('userName');
+            const currentSelected = selectEl.value;
+            const myVote = globalVotes[deviceFingerprint];
+            const usedNames = new Set();
+
+            Object.entries(globalVotes).forEach(([fp, vote]) => {
+                // 본인이 제출했던 이름이 아니면 사용 중 목록에 추가
+                if (fp !== deviceFingerprint && vote.name) {
+                    usedNames.add(vote.name);
+                }
+            });
+
+            selectEl.innerHTML = `<option value="">-- 성명을 선택하세요 (총 38명) --</option>`;
+
+            memberList.forEach(name => {
+                const option = document.createElement('option');
+                option.value = name;
+                if (usedNames.has(name)) {
+                    option.textContent = `${name} (이미 제출함)`;
+                    option.disabled = true;
+                    option.className = "text-slate-500 bg-slate-900";
+                } else {
+                    option.textContent = name;
+                }
+                selectEl.appendChild(option);
+            });
+
+            if (myVote && myVote.name) {
+                selectEl.value = myVote.name;
+            } else if (currentSelected) {
+                selectEl.value = currentSelected;
             }
         }
 
@@ -334,10 +377,6 @@
             } else {
                 document.getElementById('editNotice').classList.add('hidden');
                 document.getElementById('submitBtnText').innerText = '투표 내용 제출하기';
-                document.getElementById('userName').value = '';
-                document.getElementById('food0').value = '';
-                document.getElementById('food1').value = '';
-                document.getElementById('dessert').value = '';
             }
         }
 
@@ -369,7 +408,7 @@
             const dessert = document.getElementById('dessert').value.trim();
 
             if (!name || !food0) {
-                alert('성명과 음식점 0은 필수 입력 항목입니다.');
+                alert('성명과 음식점 0은 필수 선택/입력 항목입니다.');
                 return;
             }
 
