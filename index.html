@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>과학화통제소 10월 회식 메뉴 투표</title>
+    <title>과학화통제소 11월 회식 메뉴 투표</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -48,13 +48,10 @@
                     <i class="fa-solid fa-utensils text-lg"></i>
                 </div>
                 <div>
-                    <h1 class="font-bold text-base text-white leading-tight">과학화통제소 10월 회식</h1>
+                    <h1 class="font-bold text-base text-white leading-tight">과학화통제소 11월 회식</h1>
                     <p class="text-xs text-slate-400">메뉴 및 장소 투표 시스템</p>
                 </div>
             </div>
-            <button onclick="openAdminModal()" class="text-slate-400 hover:text-white p-2 rounded-lg hover:bg-slate-700/50 transition text-sm">
-                <i class="fa-solid fa-gear text-lg"></i>
-            </button>
         </div>
     </header>
 
@@ -73,7 +70,7 @@
                 <div class="text-sm">
                     <h2 class="font-bold text-indigo-200 mb-1">회식 일정 및 안내</h2>
                     <p class="text-slate-300 leading-relaxed text-xs sm:text-sm">
-                        • <strong>일시:</strong> 10월 29일 (목)<br>
+                        • <strong>일시:</strong> 11월 26일 (목)<br>
                         • <strong>대상:</strong> 사천시 소재, 당일 영업 매장<br>
                         • 본인 이름을 선택하여 투표해주세요. (이미 완료된 이름은 선택 불가)
                     </p>
@@ -102,11 +99,11 @@
                     <span>이 기기로 이미 제출한 내역이 있습니다. 내용을 수정하여 다시 제출할 수 있습니다.</span>
                 </div>
 
-                <!-- Personal Info (Dropdown) -->
+                <!-- Personal Info (Dropdown - 40명) -->
                 <div>
                     <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2">성명 <span class="text-rose-400">*</span></label>
                     <select id="userName" required class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-indigo-500 transition">
-                        <option value="">-- 성명을 선택하세요 (총 38명) --</option>
+                        <option value="">-- 성명을 선택하세요 (총 40명) --</option>
                     </select>
                 </div>
 
@@ -149,7 +146,7 @@
             <div class="bg-slate-800/60 border border-slate-700/50 rounded-2xl p-4 flex items-center justify-between shadow-xl">
                 <span class="text-xs text-slate-400 font-medium">현재 총 투표 참여 인원</span>
                 <span class="text-sm font-bold bg-indigo-500/20 text-indigo-300 px-3 py-1 rounded-full border border-indigo-500/30">
-                    <span id="totalCount">0</span> / 38명 참여 중
+                    <span id="totalCount">0</span> / 40명 참여 중
                 </span>
             </div>
 
@@ -177,16 +174,6 @@
                 <div id="myVoteDetail" class="bg-slate-900/80 p-3.5 rounded-xl border border-indigo-500/40 space-y-2"></div>
             </div>
 
-            <div id="adminVotesSection" class="bg-slate-800/60 border border-amber-500/40 rounded-2xl p-5 backdrop-blur-sm shadow-xl hidden">
-                <div class="flex items-center justify-between mb-4">
-                    <h3 class="font-bold text-amber-300 text-sm flex items-center space-x-2">
-                        <i class="fa-solid fa-lock-open text-amber-400"></i>
-                        <span>전체 제출 내역 (관리자 모드 전용)</span>
-                    </h3>
-                </div>
-                <div id="allVotesList" class="space-y-3 max-h-[450px] overflow-y-auto pr-1"></div>
-            </div>
-
         </div>
 
     </main>
@@ -196,41 +183,14 @@
         과학화통제소 회식 메뉴 투표 시스템 &copy; 2026
     </footer>
 
-    <!-- Admin Modal -->
-    <div id="adminModal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-sm w-full p-6 space-y-4 shadow-2xl">
-            <div class="flex items-center justify-between">
-                <h3 class="font-bold text-white text-base">관리자 모드</h3>
-                <button onclick="closeAdminModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-            
-            <div id="adminLoginArea" class="space-y-3">
-                <p class="text-xs text-slate-400">관리자 비밀번호를 입력하세요.</p>
-                <input type="password" id="adminPw" placeholder="비밀번호 입력" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-indigo-500">
-                <button onclick="checkAdminPassword()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-semibold py-2.5 rounded-xl text-sm transition">로그인</button>
-            </div>
-
-            <div id="adminControlArea" class="hidden space-y-3">
-                <p class="text-xs text-emerald-400 font-semibold"><i class="fa-solid fa-circle-check"></i> 관리자 권한이 활성화되었습니다.</p>
-                <button onclick="copyKakaoSummary()" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-medium py-2.5 rounded-xl text-xs transition flex items-center justify-center space-x-2">
-                    <i class="fa-solid fa-copy text-indigo-400"></i>
-                    <span>카톡 공유용 요약 텍스트 복사</span>
-                </button>
-                <button onclick="exportCSV()" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-medium py-2.5 rounded-xl text-xs transition flex items-center justify-center space-x-2">
-                    <i class="fa-solid fa-file-excel text-emerald-400"></i>
-                    <span>엑셀(CSV) 다운로드</span>
-                </button>
-                <button onclick="resetAllData()" class="w-full bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 font-medium py-2.5 rounded-xl text-xs transition border border-rose-500/30">전체 데이터 초기화</button>
-            </div>
-        </div>
-    </div>
-
     <script>
+        // 총 40명 명단
         const memberList = [
+            "김하음", "서건하", "이규범", "임원열",
             "엄현승", "이동현", "양시은", "김민성", "안성모", "정세윤", "박효준", "서호성", "김건희", "박성준", 
             "김수완", "백승원", "백성욱", "신익현", "문지윤", "박윤범", "윤우진", "문서진", "이동권", "이영탁", 
             "김도현", "이종민", "유정수", "이승혁", "육지환", "임하윤", "한종균", "정동하", "최신성", "김유성", 
-            "채승훈", "김민준", "이주성", "안지원", "최성민", "이승준", "김민기", "정윤재"
+            "채승훈", "김민준", "이주성", "안지원", "최성민", "이승준"
         ];
 
         const firebaseConfig = {
@@ -255,7 +215,6 @@
 
         let deviceFingerprint = '';
         let globalVotes = {};
-        let isAdminLoggedIn = false;
 
         function checkKakaoInApp() {
             const userAgent = navigator.userAgent.toLowerCase();
@@ -328,7 +287,6 @@
             }
         }
 
-        // 38명 드롭다운 갱신 (중복된 이름은 disabled 처리)
         function updateNameDropdown() {
             const selectEl = document.getElementById('userName');
             const currentSelected = selectEl.value;
@@ -336,13 +294,12 @@
             const usedNames = new Set();
 
             Object.entries(globalVotes).forEach(([fp, vote]) => {
-                // 본인이 제출했던 이름이 아니면 사용 중 목록에 추가
                 if (fp !== deviceFingerprint && vote.name) {
                     usedNames.add(vote.name);
                 }
             });
 
-            selectEl.innerHTML = `<option value="">-- 성명을 선택하세요 (총 38명) --</option>`;
+            selectEl.innerHTML = `<option value="">-- 성명을 선택하세요 (총 40명) --</option>`;
 
             memberList.forEach(name => {
                 const option = document.createElement('option');
@@ -519,99 +476,6 @@
                 `;
             } else {
                 myVoteContainer.classList.add('hidden');
-            }
-
-            const adminVotesSection = document.getElementById('adminVotesSection');
-            const allListEl = document.getElementById('allVotesList');
-
-            if (isAdminLoggedIn) {
-                adminVotesSection.classList.remove('hidden');
-                if (voteArray.length === 0) {
-                    allListEl.innerHTML = `<p class="text-xs text-slate-400 text-center py-6">등록된 데이터가 없습니다.</p>`;
-                } else {
-                    allListEl.innerHTML = voteArray.map(v => {
-                        const isMyVote = (v.fp === deviceFingerprint);
-                        return `
-                            <div class="bg-slate-900/60 p-3.5 rounded-xl border ${isMyVote ? 'border-indigo-500/50 bg-indigo-950/20' : 'border-slate-700/40'} space-y-2">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center space-x-2">
-                                        <span class="font-bold text-sm text-white">${v.name}</span>
-                                        ${isMyVote ? '<span class="text-[10px] bg-indigo-600 text-white font-bold px-2 py-0.5 rounded-full">내 투표</span>' : ''}
-                                    </div>
-                                    <span class="text-[10px] text-slate-500">${v.updatedAt || ''}</span>
-                                </div>
-                                <div class="text-xs text-slate-300 space-y-1 bg-slate-800/40 p-2 rounded-lg">
-                                    <div><strong class="text-indigo-400">음식점 0:</strong> ${v.food0}</div>
-                                    ${v.food1 ? `<div><strong class="text-slate-400">음식점 1:</strong> ${v.food1}</div>` : ''}
-                                    ${v.dessert ? `<div><strong class="text-slate-400">디저트:</strong> ${v.dessert}</div>` : ''}
-                                </div>
-                            </div>
-                        `;
-                    }).join('');
-                }
-            } else {
-                adminVotesSection.classList.add('hidden');
-            }
-        }
-
-        function openAdminModal() {
-            document.getElementById('adminModal').classList.remove('hidden');
-            document.getElementById('adminPw').value = '';
-            if (isAdminLoggedIn) {
-                document.getElementById('adminLoginArea').classList.add('hidden');
-                document.getElementById('adminControlArea').classList.remove('hidden');
-            } else {
-                document.getElementById('adminLoginArea').classList.remove('hidden');
-                document.getElementById('adminControlArea').classList.add('hidden');
-            }
-        }
-
-        function closeAdminModal() { document.getElementById('adminModal').classList.add('hidden'); }
-
-        function checkAdminPassword() {
-            if (document.getElementById('adminPw').value === '1029') {
-                isAdminLoggedIn = true;
-                document.getElementById('adminLoginArea').classList.add('hidden');
-                document.getElementById('adminControlArea').classList.remove('hidden');
-                renderStatus();
-            } else { alert('비밀번호가 틀렸습니다.'); }
-        }
-
-        function copyKakaoSummary() {
-            const voteArray = Object.values(globalVotes);
-            if (voteArray.length === 0) { alert('복사할 데이터가 없습니다.'); return; }
-            let text = `[과학화통제소 10월 회식 메뉴 투표 결과]\n총 참여 인원: ${voteArray.length}명\n\n`;
-            voteArray.forEach((v, i) => {
-                text += `${i + 1}. ${v.name}\n- 음식점0: ${v.food0}\n`;
-                if (v.food1) text += `- 음식점1: ${v.food1}\n`;
-                if (v.dessert) text += `- 디저트: ${v.dessert}\n\n`;
-            });
-            navigator.clipboard.writeText(text).then(() => { alert('카카오톡 요약 텍스트가 복사되었습니다!'); });
-        }
-
-        function exportCSV() {
-            const voteArray = Object.values(globalVotes);
-            if (voteArray.length === 0) { alert('다운로드할 데이터가 없습니다.'); return; }
-            let csv = '\uFEFF성명,음식점0,음식점1,디저트가게,제출시간\n';
-            voteArray.forEach(v => {
-                csv += `"${v.name}","${v.food0}","${v.food1 || ''}","${v.dessert || ''}","${v.updatedAt || ''}"\n`;
-            });
-            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url; a.download = '과학화통제소_10월회식투표.csv'; a.click();
-        }
-
-        async function resetAllData() {
-            if (confirm('모든 데이터를 초기화하시겠습니까?')) {
-                localStorage.removeItem('gwatongso_votes');
-                if (db) {
-                    try {
-                        const snapshot = await db.collection("votes").get();
-                        snapshot.forEach(doc => doc.ref.delete());
-                    } catch(e) {}
-                }
-                alert('초기화되었습니다.'); location.reload();
             }
         }
 
